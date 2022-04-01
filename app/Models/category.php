@@ -20,4 +20,7 @@ class category extends Model
     public function Post(){
         return $this->belongsToMany(post::class, 'category_post', 'category_id', 'post_id');
     }
+    public function Post_primary(){
+        return $this->hasMany(post::class);
+    }
 }
