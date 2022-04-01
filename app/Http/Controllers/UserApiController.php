@@ -50,7 +50,7 @@ class UserApiController extends Controller
             'data' => $user
         ], Response::HTTP_OK);
     }
- 
+
     public function authenticate(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -82,7 +82,7 @@ class UserApiController extends Controller
                 	'message' => 'Could not create token.',
                 ], 500);
         }
- 	
+
  		//Token created, return with success response and jwt token
         return response()->json([
             'success' => true,
@@ -101,7 +101,7 @@ class UserApiController extends Controller
             'token' => JWTAuth::refresh(),
         ]);
     }
- 
+
     public function logout(Request $request)
     {
         //valid credential
@@ -114,10 +114,10 @@ class UserApiController extends Controller
             return response()->json(['error' => $validator->errors()->first()], 200);
         }
 
-		//Request is validated, do logout        
+		//Request is validated, do logout
         try {
             JWTAuth::invalidate($request->token);
- 
+
             return response()->json([
                 'success' => true,
                 'message' => 'User has been logged out'
@@ -129,12 +129,12 @@ class UserApiController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
- 
+
     public function get_user(Request $request)
     {
- 
+
         $user = JWTAuth::user();
- 
+
         return response()->json(['user' => $user]);
     }
 
@@ -144,11 +144,11 @@ class UserApiController extends Controller
     }
 
     public function list_follow(){
-        return response()->json(['list_user_follow' => ActionUser::list_follow(1)]);
+        return response()->json(['count' => (ActionUser::list_follow(1))->count(),'data' => ActionUser::list_follow(1)]);
     }
 
     public function follow_me(){
-        return response()->json(['list_user_follow' => ActionUser::list_follow(0)]);
+        return response()->json(['count' => (ActionUser::list_follow(0))->count(), 'data' => ActionUser::list_follow(0)]);
     }
 
     public function upload(Request $request){

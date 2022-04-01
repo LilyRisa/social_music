@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserApiController;
+use App\Http\Controllers\PostController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +18,9 @@ use App\Http\Controllers\UserApiController;
 
 Route::post('login', [UserApiController::class, 'authenticate']);
 Route::post('register', [UserApiController::class, 'register']);
+Route::get('test', function(){
+    return \response()->json(['sadsa' => 'ádas']);
+});
 
 Route::group(['middleware' => ['jwt.verify']], function() {
     Route::post('refresh', [UserApiController::class, 'refresh']);
@@ -26,13 +30,10 @@ Route::group(['middleware' => ['jwt.verify']], function() {
     Route::get('list_follow', [UserApiController::class, 'list_follow']);
     Route::get('follow_me', [UserApiController::class, 'follow_me']);
     Route::post('upload', [UserApiController::class, 'upload']);
-    // Route::get('file_uploaded', [UserApiController::class, 'file_uploaded']);  // localhost/api/file_uploaded?type=music
-    Route::post('upload', [UserApiController::class, 'upload']);
 
-    Route::group(['middleware' => ['user.banned']], function() {
-        Route::get('test', function(){
-            return response()->json(['status' => true]);
-        });
+    Route::group(['prefix' => 'post', 'middleware' => 'user.banned'], function(){
+        Route::get('list_post', [PostController::class, 'list_post']);
+        Route::post('upload_post', [PostController::class, 'post']);
     });
     Route::get('products', 'UserApiController@index');
 });
