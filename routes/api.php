@@ -26,5 +26,13 @@ Route::group(['middleware' => ['jwt.verify']], function() {
     Route::get('list_follow', [UserApiController::class, 'list_follow']);
     Route::get('follow_me', [UserApiController::class, 'follow_me']);
     Route::post('upload', [UserApiController::class, 'upload']);
+    // Route::get('file_uploaded', [UserApiController::class, 'file_uploaded']);  // localhost/api/file_uploaded?type=music
+    Route::post('upload', [UserApiController::class, 'upload']);
+
+    Route::group(['middleware' => ['user.banned']], function() {
+        Route::get('test', function(){
+            return response()->json(['status' => true]);
+        });
+    });
     Route::get('products', 'UserApiController@index');
 });
