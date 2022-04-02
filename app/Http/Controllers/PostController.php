@@ -8,11 +8,20 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 use App\Models\post;
+use App\Models\User;
 
 
 class PostController extends Controller
 {
     public function list_post(){
+        if(isset($_GET['username'])){
+            $user = User::where('user_name', $_GET['username'])->first();
+            if($user == null){
+                return response()->json(['status' => false,'messenges' => 'Username not found !']);
+            }
+            $post = post::with(['user', 'Category_primary', 'Category', 'video'])->where('user_id', $user->id)->get();
+            return response()->json(['count' => $post->count(),'data' => $post]);
+        }
         $post = post::with(['user', 'Category_primary', 'Category', 'video'])->where('user_id', (JWTAuth::user())->id)->get();
         return response()->json(['count' => $post->count(),'data' => $post]);
     }
@@ -32,7 +41,7 @@ class PostController extends Controller
         $data['user_id'] = (JWTAuth::user())->id;
         $data['category_primary_id'] = (int) $data['category_primary_id'];
         if ($validator->fails()) {
-            return response()->json(['status' =>false, 'messenges' => $validator->errors()->first()], 200);
+            return response()->json(['status' =>false, 'message' => $validator->errors()->first()], 200);
         }
         try{
             $post = new post();
@@ -52,9 +61,28 @@ class PostController extends Controller
                     $post->Category()->attach($item);
                 }
             }
-            return response()->json(['status' => true, 'messenges' => 'successfully!']);
+            return response()->json(['status' => true, 'message' => 'successfully!']);
         }catch(Exception $e){
-            return response()->json(['status' => false, 'messenges' => $e]);
+            return response()->json(['status' => false, 'message' => $e]);
         }
+    }
+
+    public function update(Request $request, $id){
+        $post = post::with('user')->where('id', $id)->first();
+        if($post->user->id != (JWTAuth::user())->id){
+            return response()->json(['status' => false, 'message' => 'you have no authority!']);
+        }
+        try{
+            $post->title = $request->input('title') != null ? $request->input('title') : $post->title;
+            $post->keyword = $request->input('keyword') != null ? $request->input('keyword') : $post->keyword;
+            $post->description = $request->input('description') != null ? $request->input('description') : $post->description;
+            $post->thumb = $request->input('thumb') != null ? $request->input('thumb') : $post->thumb;
+            $post->content = $request->input('content') != null ? $request->input('content') : $post->content;
+            $post->save();
+            return response()->json(['status' => true]);
+        }catch(Exception $e){
+            return response()->json(['status' => false, 'message' => $e]);
+        }
+        
     }
 }

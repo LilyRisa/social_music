@@ -4,7 +4,7 @@ namespace App\Helpers;
 use Storage;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-
+use Intervention\Image\Facades\Image;
 class FileTool{
     public static function sluggify($url)
     {
@@ -72,5 +72,17 @@ class FileTool{
             echo fread($stream, $length);
             fclose($stream);
             }, $status, $headers);
+    }
+
+    public function getImg($filename){
+        $file = Storage::disk('local')->get('public/images/'.$filename);
+        $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
+        $path .= 'public/images/'.$filename;
+        $ext = explode('.', $filename);
+        $ext = end($ext);
+        $img = \Image::make($file);
+    	return response()->make($img->encode($img->mime()), 200, array('Content-Type' => $img->mime(),'Cache-Control'=>'max-age=86400, public'));
+        return response()->file($path,['Content-type' => 'image/jpeg']);
+
     }
 }
