@@ -82,7 +82,6 @@ class FileTool{
         $ext = end($ext);
         $img = \Image::make($file);
     	return response()->make($img->encode($img->mime()), 200, array('Content-Type' => $img->mime(),'Cache-Control'=>'max-age=86400, public'));
-        return response()->file($path,['Content-type' => 'image/jpeg']);
 
     }
 }
