@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\User;
 use App\Models\category;
+use App\Traits\ImageUpload;
 
 class post extends Model
 {
-    use HasFactory;
+    use HasFactory,ImageUpload;
+
+    protected $appends = ['thumb_url'];
 
     protected $fillable = [
         'category_primary_id ', 'user_id', 'title', 'keyword', 'description', 'type_asset', 'content', 'asset_id', 'created_at', 'updated_at'
@@ -31,5 +34,8 @@ class post extends Model
     public function video()
     {
         return $this->belongsTo(video::class,'asset_id');
+    }
+    public function getThumbUrlAttribute(){
+        return $this->attributes['thumb_url'] = $this->getImageUrl($this->attributes['thumb']);
     }
 }

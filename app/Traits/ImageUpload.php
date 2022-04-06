@@ -13,4 +13,10 @@ trait ImageUpload
         $url = end($url);
         return ['slug' => $url, 'url' => url('/').'/image/'.$url]; // Just return image
     }
+
+    public function getImageUrl($url) // Taking input image as parameter
+    {
+
+        return url('/').'/image/'.$url; // Just return image
+    }
 }

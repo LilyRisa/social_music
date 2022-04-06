@@ -9,10 +9,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 use App\Models\post;
 use App\Models\User;
+use App\Traits\ImageUpload;
 
 
 class PostController extends Controller
 {
+    use ImageUpload;
+
     public function list_post(){
         if(isset($_GET['username'])){
             $user = User::where('user_name', $_GET['username'])->first();
@@ -33,6 +36,11 @@ class PostController extends Controller
             } , 'video'])->get();
             return response()->json(['count' => $post->count(),'data' => $post]);
         }
+
+        if(isset($_GET['search'])){
+            $post = post::with(['user', 'Category_primary', 'Category', 'video'])->whereLike('category_primary_id', $_GET['category_primary'])->get();
+            return response()->json(['count' => $post->count(),'data' => $post]);
+        }
         $post = post::with(['user', 'Category_primary', 'Category', 'video'])->where('user_id', (JWTAuth::user())->id)->get();
         return response()->json(['count' => $post->count(),'data' => $post]);
     }
@@ -45,7 +53,7 @@ class PostController extends Controller
             'category_primary_id' => 'required|integer',
             'title' => 'required|string',
             'keyword' => 'required|string',
-            'thumb' => 'required|string',
+            'thumb' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
             'type_asset' => 'required|string'
 
         ]);
@@ -61,7 +69,8 @@ class PostController extends Controller
             $post->title = $data['title'];
             $post->keyword = $data['keyword'];
             $post->description = isset($data['description']) ? $data['description'] : null;
-            $post->thumb = $data['thumb'];
+            $filePath = $this->UserImageUpload($request->file('thumb'));
+            $post->thumb = $filePath['slug'];
             $post->type_asset = $data['type_asset'];
             $post->content = isset($data['content']) ? $data['content'] : null;
             $post->asset_id  = isset($data['asset_id']) ? $data['asset_id'] : null;
@@ -72,7 +81,7 @@ class PostController extends Controller
                     $post->Category()->attach($item);
                 }
             }
-            return response()->json(['status' => true, 'message' => 'successfully!']);
+            return response()->json(['status' => true, 'message' => 'successfully!', 'data' =>$post]);
         }catch(Exception $e){
             return response()->json(['status' => false, 'message' => $e]);
         }
