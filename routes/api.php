@@ -21,15 +21,16 @@ use App\Http\Controllers\MediaController;
 Route::post('login', [UserApiController::class, 'authenticate']);
 Route::post('register', [UserApiController::class, 'register']);
 Route::get('category', [CategoryController::class, 'get']);
-Route::get('test', function(){
-    return \response()->json(['sadsa' => 'ádas']);
-});
+
 
 Route::group(['prefix' => 'post'], function(){
     Route::get('list_post', [PostController::class, 'list_post']);
 });
 
 Route::group(['middleware' => ['jwt.verify']], function() {
+    Route::get('check', function(){
+        return \response()->json(['status' => true]);
+    });
     Route::post('refresh', [UserApiController::class, 'refresh']);
     Route::get('logout', [UserApiController::class, 'logout']);
     Route::get('get_user', [UserApiController::class, 'get_user']);
