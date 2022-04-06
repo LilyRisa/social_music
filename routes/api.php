@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserApiController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,7 @@ use App\Http\Controllers\PostController;
 
 Route::post('login', [UserApiController::class, 'authenticate']);
 Route::post('register', [UserApiController::class, 'register']);
+Route::get('category', [CategoryController::class, 'get']);
 Route::get('test', function(){
     return \response()->json(['sadsa' => 'ádas']);
 });
