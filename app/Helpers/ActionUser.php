@@ -49,4 +49,18 @@ class ActionUser{
             return false;
         }
     }
+
+    public function unfollow($username){
+        $user = User::where('user_name', $username)->first();
+        $get = DB::table('user_follow')->where('user_curent', (JWTAuth::user())->id)->where('user_target', $user->id)->get();
+        if(empty($get)){
+            return false;
+        }
+        try{
+            DB::table('user_follow')->where('user_curent', (JWTAuth::user())->id)->where('user_target', $user->id)->delete();
+            return true;
+        }catch(Exception $e){
+            return false;
+        }
+    }
 }

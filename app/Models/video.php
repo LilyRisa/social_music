@@ -10,8 +10,14 @@ class video extends Model
 {
     use HasFactory;
 
+    protected $appends = ['url'];
+
     public function posts()
     {
         return $this->hasMany(post::class);
+    }
+
+    public function getUrlAttribute(){
+        return $this->attributes['url'] = url('/').'/media/'.$this->attributes['slug'];
     }
 }

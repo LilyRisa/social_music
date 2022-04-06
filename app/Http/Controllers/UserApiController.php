@@ -10,7 +10,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Hash;
 use App\Helpers\ActionUser;
 use App\Helpers\FileTool;
 
@@ -31,7 +31,7 @@ class UserApiController extends Controller
 
         //Send failed response if request is not valid
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 200);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
 
         //Request is valid, create new user
@@ -45,7 +45,7 @@ class UserApiController extends Controller
 
         //User created, return success response
         return response()->json([
-            'success' => true,
+            'status' => true,
             'message' => 'User created successfully',
             'data' => $user
         ], Response::HTTP_OK);
@@ -71,21 +71,21 @@ class UserApiController extends Controller
         try {
             if (! $token = JWTAuth::attempt($credentials)) {
                 return response()->json([
-                	'success' => false,
+                	'status' => false,
                 	'message' => 'Login credentials are invalid.',
                 ], 400);
             }
         } catch (JWTException $e) {
     	return $credentials;
             return response()->json([
-                	'success' => false,
+                	'status' => false,
                 	'message' => 'Could not create token.',
                 ], 500);
         }
 
  		//Token created, return with success response and jwt token
         return response()->json([
-            'success' => true,
+            'status' => true,
             'token_type' => 'bearer',
             'expires_in' => JWTAuth::factory()->getTTL() * 60,
             'token' => $token,
@@ -95,7 +95,7 @@ class UserApiController extends Controller
     public function refresh()
     {
         return response()->json([
-            'success' => true,
+            'status' => true,
             'token_type' => 'bearer',
             'expires_in' => JWTAuth::factory()->getTTL() * 60,
             'token' => JWTAuth::refresh(),
@@ -119,12 +119,12 @@ class UserApiController extends Controller
             JWTAuth::invalidate($request->token);
 
             return response()->json([
-                'success' => true,
+                'status' => true,
                 'message' => 'User has been logged out'
             ]);
         } catch (JWTException $exception) {
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'Sorry, user cannot be logged out'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -151,26 +151,30 @@ class UserApiController extends Controller
         return response()->json(['count' => (ActionUser::list_follow(0))->count(), 'data' => ActionUser::list_follow(0)]);
     }
 
-    public function upload(Request $request){
+    public function unfollow($username){
+        return response()->json(['status' => ActionUser::unfollow($username)]);
+    }
 
+    public function update_profile(Request $request){
 
-        if(!empty($request->file('file')->getClientOriginalExtension()) && ($request->file('file')->getClientOriginalExtension() == 'mp3' || $request->file('file')->getClientOriginalExtension() == 'ogg' || $request->file('file')->getClientOriginalExtension() == 'wav')){
-            $type = 'audio';
-        }else if($request->file('file')->getClientOriginalExtension() == 'avi' || $request->file('file')->getClientOriginalExtension() == 'flv' || $request->file('file')->getClientOriginalExtension() == 'mp4'){
-            $type =  'video';
-        }else{
-            return response()->json(['status' => false]);
+        try{
+            $user = JWTAuth::user();
+            $user = User::find($user->id);
+            $user->full_name = $request->input('full_name') != null ? $request->input('full_name') : null;
+            $user->address = $request->input('address') != null ? $request->input('address') : null;
+            $user->birthday = $request->input('birthday') != null ? $request->input('birthday') : null;
+            $user->phone = $request->input('phone') != null ? $request->input('phone') : null;
+            if($request->input('password') != null){
+                if($request->input('password') == $request->input('password_confirm')){
+                    $user->password = Hash::make($request->input('password'));
+                }
+            }
+            $user->save();
+            return response()->json(['status' => true]);
+        }catch(Exception $e){
+            return response()->json(['status' => false, 'message' => $e]);
         }
-        $slug = FileTool::sluggify($request->file('file')->getClientOriginalName()).time().uniqid(rand());
-        $path = $request->file('file')->store('public/files');
 
-        $save = new video;
-        $save->slug = $slug;
-        $save->asset = $path;
-        $save->type = $type;
-        $save->save();
-        $data = video::find($save->id);
-        $data->slug = url('/').'/media/'.$data->slug;
-        return response()->json(['data' => $data]);
+        
     }
 }

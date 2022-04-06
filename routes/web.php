@@ -13,6 +13,7 @@ use App\Http\Controllers\MediaController;
 |
 */
 Route::get('media/{slug}', [MediaController::class, 'get']);
+Route::get('image/{slug}', [MediaController::class, 'images']);
 Route::get('/', function () {
     return view('welcome');
 });
