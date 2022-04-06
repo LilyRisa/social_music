@@ -25,6 +25,10 @@ Route::get('test', function(){
     return \response()->json(['sadsa' => 'ádas']);
 });
 
+Route::group(['prefix' => 'post'], function(){
+    Route::get('list_post', [PostController::class, 'list_post']);
+});
+
 Route::group(['middleware' => ['jwt.verify']], function() {
     Route::post('refresh', [UserApiController::class, 'refresh']);
     Route::get('logout', [UserApiController::class, 'logout']);
@@ -46,7 +50,6 @@ Route::group(['middleware' => ['jwt.verify']], function() {
             Route::post('upload_post', [PostController::class, 'post']);
             Route::post('update_post/{id}', [PostController::class, 'update']);
         });
-        Route::get('list_post', [PostController::class, 'list_post']);
     });
     Route::get('products', 'UserApiController@index');
 });

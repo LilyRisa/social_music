@@ -22,6 +22,17 @@ class PostController extends Controller
             $post = post::with(['user', 'Category_primary', 'Category', 'video'])->where('user_id', $user->id)->get();
             return response()->json(['count' => $post->count(),'data' => $post]);
         }
+        if(isset($_GET['category_primary'])){
+            $post = post::with(['user', 'Category_primary', 'Category', 'video'])->where('category_primary_id', $_GET['category_primary'])->get();
+            return response()->json(['count' => $post->count(),'data' => $post]);
+        }
+        if(isset($_GET['category'])){
+            $category = $_GET['category'];
+            $post = post::with(['user', 'Category_primary', 'Category' => function($query) use ($category){
+                $query->where('category_id', $category);
+            } , 'video'])->where('category_primary_id', $_GET['category_primary'])->get();
+            return response()->json(['count' => $post->count(),'data' => $post]);
+        }
         $post = post::with(['user', 'Category_primary', 'Category', 'video'])->where('user_id', (JWTAuth::user())->id)->get();
         return response()->json(['count' => $post->count(),'data' => $post]);
     }
@@ -83,6 +94,6 @@ class PostController extends Controller
         }catch(Exception $e){
             return response()->json(['status' => false, 'message' => $e]);
         }
-        
+
     }
 }
