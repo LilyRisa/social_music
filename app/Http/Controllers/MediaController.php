@@ -39,6 +39,7 @@ class MediaController extends Controller
         $save->type = $type;
         $save->save();
         $data = video::find($save->id);
+        $data->type_ext = $type.'/'.$request->file('file')->getClientOriginalExtension();
         return response()->json(['data' => $data]);
     }
 
